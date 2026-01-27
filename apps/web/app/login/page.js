@@ -37,6 +37,7 @@ export default function LoginPage() {
                 className="relative z-10 w-full max-w-md"
             >
                 <div className="bg-[#111]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+                    {/* ... existing content ... */}
                     {/* Logo */}
                     <div className="text-center mb-8">
                         <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
@@ -96,6 +97,11 @@ export default function LoginPage() {
                     <p className="text-center text-gray-600 text-xs mt-6">
                         Guest sessions are temporary. Sign in with Google for persistent access.
                     </p>
+                </div>
+
+                {/* Footer Attribution */}
+                <div className="text-center mt-8 text-gray-500 text-sm font-light opacity-50 hover:opacity-100 transition-opacity">
+                    Made by <span className="font-medium text-gray-400">Kshitij Shukla</span>
                 </div>
             </motion.div>
         </div>
