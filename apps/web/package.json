@@ -1,0 +1,33 @@
+{
+    "name": "web",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev --turbopack",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "next": "^15.1.0",
+        "@tiptap/react": "^2.1.13",
+        "@tiptap/pm": "^2.1.13",
+        "@tiptap/starter-kit": "^2.1.13",
+        "@tiptap/extension-collaboration": "^2.1.13",
+        "@tiptap/extension-collaboration-cursor": "^2.1.13",
+        "yjs": "^13.6.10",
+        "y-websocket": "^1.5.0",
+        "y-indexeddb": "^9.0.12",
+        "next-auth": "^4.24.5",
+        "framer-motion": "^11.0.3"
+    },
+    "devDependencies": {
+        "tailwindcss": "^4.0.0",
+        "@tailwindcss/postcss": "^4.0.0",
+        "postcss": "^8.4.35",
+        "eslint": "^9.0.0",
+        "eslint-config-next": "^15.1.0"
+    }
+}
