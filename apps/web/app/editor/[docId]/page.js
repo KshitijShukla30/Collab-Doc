@@ -411,10 +411,6 @@ export default function EditorPage() {
                     </motion.div>
                 </div>
             )}
-            {/* Footer Attribution */}
-            <div className="absolute bottom-4 right-4 z-50 text-xs text-white/20 select-none pointer-events-none">
-                Made by Kshitij Shukla
-            </div>
         </div>
     );
 }
