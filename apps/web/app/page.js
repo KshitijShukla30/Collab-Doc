@@ -13,9 +13,12 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [showNewDocModal, setShowNewDocModal] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState(null);
+    const [docToDelete, setDocToDelete] = useState(null);
     const [newDocTitle, setNewDocTitle] = useState('');
     const [copied, setCopied] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const router = useRouter();
 
     // Get user identifier
@@ -70,15 +73,34 @@ export default function Dashboard() {
         }
     };
 
-    const deleteDocument = async (docId, e) => {
+    // Open delete confirmation modal
+    const openDeleteModal = (doc, e) => {
         e.stopPropagation();
-        if (!confirm('Are you sure you want to delete this document?')) return;
+        setDocToDelete(doc);
+        setShowDeleteModal(true);
+    };
 
+    // Confirm and execute delete
+    const confirmDelete = async () => {
+        if (!docToDelete) return;
+
+        setDeleting(true);
         try {
-            await fetch(`${API_URL}/api/documents/${docId}`, { method: 'DELETE' });
-            setDocuments(docs => docs.filter(d => d.docId !== docId));
+            const res = await fetch(`${API_URL}/api/documents/${docToDelete.docId}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                setDocuments(docs => docs.filter(d => d.docId !== docToDelete.docId));
+                setShowDeleteModal(false);
+                setDocToDelete(null);
+            } else {
+                console.error('Delete failed:', res.statusText);
+            }
         } catch (error) {
             console.error('Failed to delete document:', error);
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -242,7 +264,7 @@ export default function Dashboard() {
                                             </svg>
                                         </button>
                                         <button
-                                            onClick={(e) => deleteDocument(doc.docId, e)}
+                                            onClick={(e) => openDeleteModal(doc, e)}
                                             className="p-2 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-all"
                                             title="Delete"
                                         >
@@ -331,6 +353,54 @@ export default function Dashboard() {
                         >
                             Done
                         </button>
+                    </motion.div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && docToDelete && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-[#111] border border-white/10 rounded-2xl p-6 w-full max-w-md"
+                    >
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </div>
+                            <h2 className="text-lg font-semibold">Delete Document?</h2>
+                        </div>
+
+                        <p className="text-gray-400 mb-6">
+                            Are you sure you want to delete <span className="text-white font-medium">"{docToDelete.title}"</span>? This action cannot be undone.
+                        </p>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => { setShowDeleteModal(false); setDocToDelete(null); }}
+                                disabled={deleting}
+                                className="flex-1 px-4 py-2 border border-white/10 rounded-lg hover:bg-white/5 transition-colors disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                disabled={deleting}
+                                className="flex-1 px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg font-medium hover:bg-red-500/30 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {deleting ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    'Delete'
+                                )}
+                            </button>
+                        </div>
                     </motion.div>
                 </div>
             )}
