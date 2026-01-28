@@ -2,6 +2,8 @@
 
 A real-time collaborative document editor with live cursors, multiplayer editing, and persistent storage. Built with modern web technologies.
 
+**Live Demo:** [https://collab-doc-web.vercel.app](https://collab-doc-web.vercel.app)
+
 ---
 
 ## Features
