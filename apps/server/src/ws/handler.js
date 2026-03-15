@@ -3,6 +3,7 @@ import * as syncProtocol from 'y-protocols/sync';
 import * as awarenessProtocol from 'y-protocols/awareness';
 import * as encoding from 'lib0/encoding';
 import * as decoding from 'lib0/decoding';
+import { getDocumentContent, saveDocumentContent } from '../db/models.js';
 
 // Message types
 const messageSync = 0;
@@ -12,9 +13,9 @@ const messageAwareness = 1;
 const docs = new Map();
 
 /**
- * Get or create a Yjs document
+ * Get or create a Yjs document (with DB persistence)
  */
-function getYDoc(docName) {
+async function getYDoc(docName) {
     if (!docs.has(docName)) {
         const doc = new Y.Doc();
         doc.name = docName;
@@ -23,6 +24,13 @@ function getYDoc(docName) {
             conns: new Set(),
             awareness: new awarenessProtocol.Awareness(doc)
         });
+        
+        // Load existing content from DB
+        const buffer = await getDocumentContent(docName);
+        if (buffer) {
+            Y.applyUpdate(doc, new Uint8Array(buffer));
+        }
+
         console.log(`Created new document: ${docName}`);
     }
     return docs.get(docName);
@@ -74,8 +82,8 @@ function handleMessage(conn, docData, message) {
 /**
  * Setup WebSocket connection for a document
  */
-export function setupWSConnection(conn, docName) {
-    const docData = getYDoc(docName);
+export async function setupWSConnection(conn, docName) {
+    const docData = await getYDoc(docName);
     const { doc, conns, awareness } = docData;
 
     // Add connection to document
@@ -151,10 +159,22 @@ export function setupWSConnection(conn, docName) {
 
         // Clean up empty documents after a delay
         if (conns.size === 0) {
-            setTimeout(() => {
+            setTimeout(async () => {
                 if (conns.size === 0) {
+                    const docToSave = docs.get(docName);
+                    if (docToSave) {
+                        try {
+                            const stateVector = Y.encodeStateAsUpdate(docToSave.doc);
+                            const buffer = Buffer.from(stateVector);
+                            await saveDocumentContent(docName, buffer);
+                            console.log(`Saved document state to DB: ${docName}`);
+                        } catch (error) {
+                            console.error(`Error saving document state: ${docName}`, error);
+                        }
+                    }
+
                     docs.delete(docName);
-                    console.log(`Document cleaned up: ${docName}`);
+                    console.log(`Document cleaned up from memory: ${docName}`);
                 }
             }, 30000);
         }

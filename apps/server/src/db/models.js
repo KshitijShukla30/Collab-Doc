@@ -101,8 +101,49 @@ export async function connectDB() {
 
         dbConnected = true;
         console.log('📦 Connected to MongoDB');
-    } catch (error) {
+} catch (error) {
         console.warn('⚠️ MongoDB connection failed, using in-memory storage');
         dbConnected = false;
+    }
+}
+
+// Get raw document content buffer from DB
+export async function getDocumentContent(docId) {
+    if (!isDBConnected()) {
+        const doc = memoryStore.get(docId);
+        return doc?.content || null;
+    }
+
+    try {
+        const doc = await Document.findOne({ docId }, { content: 1 });
+        return doc?.content || null;
+    } catch (error) {
+        console.error('Error fetching document content:', error);
+        return null;
+    }
+}
+
+// Save raw document content buffer to DB
+export async function saveDocumentContent(docId, buffer) {
+    if (!isDBConnected()) {
+        const doc = memoryStore.get(docId);
+        if (doc) {
+            doc.content = buffer;
+            doc.updatedAt = new Date();
+            memoryStore.set(docId, doc);
+        }
+        return;
+    }
+
+    try {
+        await Document.updateOne(
+            { docId },
+            { 
+                content: buffer,
+                updatedAt: new Date()
+            }
+        );
+    } catch (error) {
+        console.error('Error saving document content:', error);
     }
 }
